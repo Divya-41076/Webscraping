@@ -20,13 +20,10 @@ The tool helps filter relevant jobs by keyword (e.g., *Python, Data Scientist*) 
 
 ```
 JobScraper/
-│── scrapers/
-│   ├── internshala.py
-│   ├── timesjobs.py
-│   ├── bigshyft.py
-│── db/
-│   ├── db_config_example.py   <- Template for DB credentials
-│   ├── db_config.py           <- User’s private DB credentials (gitignored)
+├── internshala.py
+│── timesjobs.py
+│── bigshyft.py
+│── db_config.py               <- User’s DB credentials 
 │── main.py                    <- Entry point to run scraper
 │── requirements.txt           <- Python dependencies
 │── README.md                  <- Project documentation
