@@ -13,7 +13,6 @@ The tool helps filter relevant jobs by keyword (e.g., *Python, Data Scientist*) 
 - 💾 Saves matched jobs into **MySQL**
 - 📊 Logs real-time progress with ✅ *Matched* / ⚠️ *Unmatched* indicators
 - 📈 Provides a final scraping summary
-- 🔒 Secure credential management with `.gitignore` for sensitive files
 
 ---
 
