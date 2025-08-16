@@ -48,7 +48,7 @@ pip install -r requirements.txt
 ```
 
 ### 3️⃣ Configure Database Credentials
-Rename `db/db_config_example.py` to `db/db_config.py`:
+`db_config.py`:
 
 ```
 # db_config.py
@@ -56,9 +56,6 @@ MYSQL_HOST = "localhost"
 MYSQL_USER = "your_username"
 MYSQL_PASSWORD = "your_password"
 MYSQL_DATABASE = "jobscraper"
-```
-
-❗ **Note:** `db_config.py` is ignored by GitHub using `.gitignore`, so your credentials stay safe.
 
 ---
 
