@@ -1,131 +1,106 @@
-from bs4 import BeautifulSoup
-import lxml
-import requests
 import mysql.connector
 import sys
 import Internshala
 import BigShyft
 import TimesJobs
+from db_config import db_config, database_name, table_name
 
 global mydb
 
-def If_database_exist(host,user,password):
+stats = {
+    "Internshala": {"matched": 0, "unmatched": 0},
+    "TimesJobs": {"matched": 0, "unmatched": 0},
+    "BigShyft": {"matched": 0, "unmatched": 0},
+}
+
+def If_database_exist():
     global mydb
+
     def If_connection_established():
         try:
             global mydb 
-            mydb=mysql.connector.connect(
-            host=host,
-            user=user,
-            password=password
+            mydb = mysql.connector.connect(
+                host=db_config["host"],
+                user=db_config["user"],
+                password=db_config["password"]
             )
             return mydb.is_connected()
         except mysql.connector.Error as err:
-            print(f'Unable to Establish Connection: {err}')
+            print(f'❌ Unable to Establish Connection: {err}')
             return False
     
-    def Initiate_values(cur,table_name):
-        global mydb
-        cur=Internshala.insert_values(cur,table_name)
+    def Initiate_values(cur, table_name):
+        global stats, mydb
+        cur, m, u = Internshala.insert_values(cur, table_name)
+        stats["Internshala"]["matched"] += m
+        stats["Internshala"]["unmatched"] += u
         mydb.commit()
-        cur=TimesJobs.insert_values(cur,table_name)
+
+        cur, m, u = TimesJobs.insert_values(cur, table_name)
+        stats["TimesJobs"]["matched"] += m
+        stats["TimesJobs"]["unmatched"] += u
         mydb.commit()
-        cur=BigShyft.insert_values(cur,table_name)
+
+        cur, m, u = BigShyft.insert_values(cur, table_name)
+        stats["BigShyft"]["matched"] += m
+        stats["BigShyft"]["unmatched"] += u
         mydb.commit()
         return cur
     
-    def ask_for_table(cur):
-        global mydb
-        opt=input(f"""
-        Choose any one:
-         1 :To Use existing table.
-         2 :To Create a new table.
-         3 :To Exit the program. 
-        --> Your input: """)
-        if opt=='1':
-            table_name=input("Enter the name of the table: ")
-            cur.execute('SHOW TABLES;')
-            tables=[table[0] for table in cur.fetchall()]
-            if table_name in tables:
-                print(f'{table_name} Exists!!')
-                print(f'Truncating {table_name}...')
-                cur.execute(f'Truncate {table_name};')
-                mydb.commit()
-                print("Initiating Webscrapping!")
-                cur=Initiate_values(cur,table_name)
-                return cur
-            else:
-                print(f"{table_name} does not exists !")
-                print("!!!!!!!!!!!!! OPT FOR CREATING A TABLE: !!!!!!!!!!!!!!!!!!!")
-                print()
-                ask_for_table(cur)
-                return cur
-        elif opt=='2':
-            cur.execute('SHOW TABLES;')
-            table_name=input('Enter the new name for the table: ')
-            tables=[table[0] for table in cur.fetchall()]
-            if table_name in tables:
-                print(f'{table_name} Exists!!')
-                print(f'Truncating {table_name}...')
-                cur.execute(f'Truncate {table_name};')
-                mydb.commit()
-                print("Initiating Webscrapping!")
-                cur=Initiate_values(cur,table_name)
-                return cur
-            else:
-                print("Table doesn't exists....creating a new one")
-                cur.execute(f"""
-                CREATE TABLE {table_name}
-                (JOB_TITLE VARCHAR(80),
-                COMPANY_NAME VARCHAR(70),
-                SKILLS VARCHAR(200) DEFAULT NULL,
-                EXPERIENCE VARCHAR(50) DEFAULT NULL,
-                SALARY VARCHAR(50),
-                LOCATION VARCHAR(200));""")
-                mydb.commit()
-                print("Table Created!!")
-                print("Initiating the Webscrapping!")
-                cur=Initiate_values(cur,table_name)
-                return cur
-        else:
-            print("Exiting the program!!")
-            mydb.close()
-            sys.exit(0)
-
     if If_connection_established():
-        print("Connection Established!!")
-        database=input("Enter the Database you wanna work on: ")
-        print("Checking if Database Exists...")
-        cur=mydb.cursor()
+        print("✅ Connection Established!")
+        cur = mydb.cursor()
         cur.execute('SHOW DATABASES;')
-        databases=[row[0] for row in cur.fetchall()]
-        if database in databases:
-            print("Database Already Exists!!")
-            cur.close()
-            cur=mydb.cursor()
-            cur.execute(f"USE {database}")
-            print('Ready to use database!!')
-            cur=ask_for_table(cur)
-            return cur
+        databases = [row[0] for row in cur.fetchall()]
+        
+        if database_name in databases:
+            print(f"📂 Database '{database_name}' exists")
+            cur.execute(f"USE {database_name}")
         else:
-            print(f"Creating database {database}")
-            # Assuming you have a cursor object after connecting to MySQL (not shown here)
-            cur.execute(f"CREATE DATABASE {database}")
-            # (Optional) Use the new database
-            cur.execute(f"USE {database}")
-            print(f'Ready to use {database}!!')
-            cur=ask_for_table(cur)
-            return cur
+            print(f"🚀 Creating database '{database_name}'")
+            cur.execute(f"CREATE DATABASE {database_name}")
+            cur.execute(f"USE {database_name}")
+
+        cur.execute("SHOW TABLES;")
+        tables = [table[0] for table in cur.fetchall()]
+
+        if table_name in tables:
+            print(f"🗑 Table '{table_name}' exists. Truncating...")
+            cur.execute(f"TRUNCATE {table_name};")
+            mydb.commit()
+        else:
+            print(f"🆕 Creating table '{table_name}'...")
+            cur.execute(f"""
+                CREATE TABLE {table_name} (
+                    JOB_TITLE VARCHAR(80),
+                    COMPANY_NAME VARCHAR(70),
+                    SKILLS VARCHAR(200) DEFAULT NULL,
+                    EXPERIENCE VARCHAR(50) DEFAULT NULL,
+                    SALARY VARCHAR(50),
+                    LOCATION VARCHAR(200)
+                );
+            """)
+            mydb.commit()
+
+        print("⚡ Starting Web Scraping...")
+        cur = Initiate_values(cur, table_name)
+        return cur
     else:
-        print("Try to fix the code...Unable to connect")
+        print("❌ Unable to connect. Check your db_config.py settings.")
         sys.exit(-1)
 
 
-host='localhost'
-print("Establishing Connection...")
-user=input("Enter the Username of MySQL: ")
-password=input("Enter the Password for given host: ")
-cur=If_database_exist(host,user,password)
+print("🔗 Establishing Connection...")
+cur = If_database_exist()
 mydb.commit()
 mydb.close()
-print("Work done!!")
+
+print("\n📊 Final Scraping Summary:")
+total_matched = total_unmatched = 0
+for site, result in stats.items():
+    print(f" - {site}: Matched {result['matched']}, Unmatched {result['unmatched']}")
+    total_matched += result["matched"]
+    total_unmatched += result["unmatched"]
+
+print(f"\n✅ Total Matched: {total_matched}, ⚠️ Total Unmatched: {total_unmatched}")
+print("🎉 Work done!!")
