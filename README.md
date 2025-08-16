@@ -1,3 +1,4 @@
+
 # 🛠 JobScraper – Multi-Portal Job Scraping with MySQL
 
 A Python-based job scraper that extracts job opportunities from **Internshala, TimesJobs, and BigShyft** using **BeautifulSoup** and stores the results in a **MySQL database**.  
@@ -48,7 +49,7 @@ pip install -r requirements.txt
 ```
 
 ### 3️⃣ Configure Database Credentials
-`db_config.py`:
+Rename `db/db_config_example.py` to `db/db_config.py`:
 
 ```
 # db_config.py
@@ -56,6 +57,9 @@ MYSQL_HOST = "localhost"
 MYSQL_USER = "your_username"
 MYSQL_PASSWORD = "your_password"
 MYSQL_DATABASE = "jobscraper"
+```
+
+❗ **Note:** `db_config.py` is ignored by GitHub using `.gitignore`, so your credentials stay safe.
 
 ---
 
@@ -109,6 +113,23 @@ SELECT * FROM job_listings;
 
 ---
 
+## 📜 License
+This project is licensed under the **MIT License** – free to use, modify, and distribute.
+
+---
 👨‍💻 Developed with ❤️ using Python, BeautifulSoup, and MySQL
 ```
 
+***
+
+✅ To make this downloadable as `README.md`:
+1. Copy the above code into a text editor (like VS Code, Sublime, or Notepad++).
+2. Save the file as **`README.md`** inside your project folder.
+3. Commit it to your GitHub repo using:
+   ```bash
+   git add README.md
+   git commit -m "Added project README"
+   git push origin main
+   ```
+
+Do you want me to also prepare a **sample `db_config_example.py` template and requirements.txt** file so your repo is fully setup-ready?
