@@ -110,4 +110,3 @@ SELECT * FROM job_listings;
 
 ---
 👨‍💻 Developed with ❤️ using Python, BeautifulSoup, and MySQL
-```
