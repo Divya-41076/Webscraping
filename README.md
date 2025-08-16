@@ -109,14 +109,8 @@ SELECT * FROM job_listings;
 - ✅ Web dashboard with **Flask/Django**
 
 ---
-
-## 📜 License
-This project is licensed under the **MIT License** – free to use, modify, and distribute.
-
----
 👨‍💻 Developed with ❤️ using Python, BeautifulSoup, and MySQL
 ```
 
-***
 
 
